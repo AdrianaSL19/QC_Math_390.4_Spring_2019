@@ -16,6 +16,7 @@ To "hand in" the homework, you should compile or publish this file into a PDF th
 
 * Print out the numerical constant pi with ten digits after the decimal point using the internal constant `pi`.
 
+
 ```{r}
 #TO-DO
 options(digits = 11)
