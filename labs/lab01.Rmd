@@ -10,7 +10,6 @@ output:
 This lab is due 11:59 PM Satuday 2/9/19. 
 
 
-
 You should have RStudio installed to edit this file. You will write code in places marked "TO-DO" to complete the problems. Some of this will be a pure programming assignment. The tools for the solutions to these problems can be found in the class practice lectures. I want you to use the methods I taught you, not for you to google and come up with whatever works. You won't learn that way.
 
 To "hand in" the homework, you should compile or publish this file into a PDF that includes output of your code. Once it's done, push by the deadline to your repository in a directory called "labs".
@@ -39,11 +38,11 @@ prod(2^seq(0,-99))
 
 
 * Find the product of the first 500 terms of `1 * 1/2 * 1/4 * 1/8 *` ... Answer in English: is this answer correct?
-find the sequence from 0 to -499, then square the sequence, finally find the product of the whole.
 
+no this is not correct because the sequence aproaches 0 but it does not equal 0.
 ```{r}
 #TO-DO
-
+prod(2^(0:-499))
 ```
 
 * Figure out a means to express the answer more exactly. Not compute exactly, but express more exactly.
@@ -136,8 +135,8 @@ Matrix_7
 ```
 
 * What should the sum of each row be (in English)? Verify that. 
-Holding on to columns constants in 'Matrix_7', then sum up row by row
 
+Holding on to columns constants in 'Matrix_7', then sum up row by row
 ```{r}
 #TO-DO
 sum(Matrix_7[,1])
@@ -145,8 +144,8 @@ sum(Matrix_7[,1])
 ```
 
 * How should the column sum look (in English)? Verify that.
-Holding on to rows constants in 'Matrix_7' then sum up column by column
 
+Holding on to rows constants in 'Matrix_7' then sum up column by column
 ```{r}
 #TO-DO
 sum(Matrix_7[1,])
