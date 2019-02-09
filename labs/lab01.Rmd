@@ -36,7 +36,6 @@ sum(2^seq(0,-99))
 prod(2^seq(0,-99))
 ```
 
-
 * Find the product of the first 500 terms of `1 * 1/2 * 1/4 * 1/8 *` ... Answer in English: is this answer correct?
 
 no this is not correct because the sequence aproaches 0 but it does not equal 0.
