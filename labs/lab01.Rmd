@@ -9,7 +9,6 @@ output:
 
 This lab is due 11:59 PM Satuday 2/9/19. 
 
-
 You should have RStudio installed to edit this file. You will write code in places marked "TO-DO" to complete the problems. Some of this will be a pure programming assignment. The tools for the solutions to these problems can be found in the class practice lectures. I want you to use the methods I taught you, not for you to google and come up with whatever works. You won't learn that way.
 
 To "hand in" the homework, you should compile or publish this file into a PDF that includes output of your code. Once it's done, push by the deadline to your repository in a directory called "labs".
@@ -104,10 +103,10 @@ x_2 = factor(x, levels = levels, ordered = TRUE)
 
 * Convert this variable to binary where 0 is no crime and 1 is any crime. Answer in English: is this the proper binary threshold?
 
+No, this is not the proper binary threshold, I think it should be other way around.
 ```{r}
 #TO-DO
 as.numeric(x_2!="none")
-
 ```
 
 * Convert this variable to an unordered, nominal factor variable.
@@ -152,7 +151,6 @@ sum(Matrix_7[1,])
 ```
 
 * Generate a matrix with 100 rows where the first column is realization from a normal with mean 17 and variance 38, the second column is uniform between -10 and 10, the third column is poisson with mean 6, the fourth column in exponential with lambda of 9, the fifth column is binomial with n = 20 and p = 0.12 and the sixth column is a binary variable with 24% 1's.
-
 
 ```{r}
 #TO-DO
