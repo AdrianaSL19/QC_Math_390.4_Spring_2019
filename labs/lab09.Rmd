@@ -57,16 +57,21 @@ Calculate the distance from each storm observation to Miami in a new variable `d
 
 ```{r}
 MIAMI_COORDS = c(25.7617, -80.1918)
-
-compute_globe_distance = function(destination, origin){
-  RAD_EARTH = 3958.8
-  dlon = (destination[2] - origin[2]) * 180 / pi
-  dlat = (destination[1] - origin[1]) * 180 / pi
-  a = (sin(dlat/2))^2 + cos(origin[1]) * cos(destination[1]) * (sin(dlon/2))^2
-  c = 2 * atan2( sqrt(a), sqrt(1-a) )
-  RAD_EARTH * c
+RAD_EARTH = 3958.8
+degrees_to_radians = function(angle_degrees){
+  for(i in 1:length(angle_degrees))
+    angle_degrees[i] = angle_degrees[i]*pi/180
+  return(angle_degrees)
 }
-
+compute_globe_distance = function(destination, origin){
+  destination_rad = degrees_to_radians(destination)
+  origin_rad = degrees_to_radians(origin)
+  delta_lat = destination_rad[1] - origin_rad[1]
+  delta_lon = destination_rad[2] - origin_rad[2]
+  h = (sin(delta_lat/2))^2 + cos(origin_rad[1]) * cos(destination_rad[1]) * (sin(delta_lon/2))^2
+  central_angle = 2 * asin(sqrt(h))
+  return(RAD_EARTH * central_angle)
+}
 storms %<>%
   rowwise() %>%
   mutate(distance_to_miami = compute_globe_distance(MIAMI_COORDS, c(lat, long))) %>%
@@ -76,8 +81,6 @@ storms %<>%
 Convert year, month, day, hour into the variable `timestamp` using the `lubridate` package.
 
 ```{r}
-library(lubridate)
-
 storms %<>%
   unite(timestamp, year, month, day, hour, sep = " - ") %<>%
   mutate(timestamp = ymd_h(timestamp))
@@ -109,13 +112,14 @@ Back to the main dataframe `storms`, create a new feature `decile_windspeed` by 
 
 ```{r}
 storms %<>% 
-  mutate(decile_windspeed =  factor(ntile(wind, 10)))
+  mutate(decile_windspeed = factor(ntile(wind, 10)))
 ```
 
 Let's summarize some data. Find the strongest storm by wind speed per year.
 
 ```{r}
 storms %>%
+  separate(timestamp, c("year", "month","day", "hour"), sep = " - ") %>%
   group_by(year) %>%
   summarize(max_wind_speed = max(wind))
 ```
@@ -164,7 +168,44 @@ storms %>%
 Now we want to transition to building real design matrices for prediction. We want to predict the following: given the first three readings of a storm, can you predict its maximum wind speed? Identify the `y` and identify which features you need $x_1, ... x_p$ and build that matrix with `dplyr` functions. This is not easy, but it is what it's all about. Feel free to "featurize" (as Dana Chandler spoke about) as creatively as you would like. You aren't going to overfit if you only build a few features relative to the total 198 storms.
 
 ```{r}
-#TO-DO
+y = storms %>%
+  group_by(name) %>%
+  summarize(max_wind_speed = max(wind))
+y = y %>%
+  arrange(desc(name))
+X = storms %>%
+  group_by(name) %>%
+  arrange(desc(timestamp)) %>%
+  filter(timestamp <= nth(timestamp, n()-2)) %>%
+  summarize(ave_pressure = mean(pressure), ave_category = mean(as.numeric(as.character(category))),
+   distance_from_start = compute_globe_distance( c(last(lat),last(long)) , c(first(lat),first(long)) ),
+    ave_ts_diameter = mean(ts_diameter, na.rm = TRUE), ave_hu_diameter = mean(hu_diameter, na.rm = TRUE),
+    pressure_by_ts_diameter = ave_pressure * ave_ts_diameter, pressure_by_hu_diameter = ave_pressure * ave_hu_diameter,
+    category_by_ts_diameter = ave_category * ave_ts_diameter, category_by_hu_diameter = ave_category * ave_ts_diameter)
+#Arrange by descending time to get the three earliest observations. 
+#Take average pressure, average category, how far the storms traveled in 18 hours.
+#I included interactions with the diameters because sometimes they were zero.
+edge_case = storms %>%
+  group_by(name) %>%
+  mutate (observations = n()) %>%
+  filter(observations < 3) %>%
+  summarize(ave_pressure = mean(pressure), ave_category = mean(as.numeric(as.character(category))),
+    distance_from_start = compute_globe_distance( c(last(lat),last(long)) , c(first(lat),first(long)) ),
+    ave_ts_diameter = mean(ts_diameter, na.rm = TRUE), ave_hu_diameter = mean(hu_diameter, na.rm = TRUE),
+    pressure_by_ts_diameter = ave_pressure * ave_ts_diameter, pressure_by_hu_diameter = ave_pressure * ave_hu_diameter,
+    category_by_ts_diameter = ave_category * ave_ts_diameter, category_by_hu_diameter = ave_category * ave_ts_diameter)
+X = rbind.data.frame(X, edge_case)
+X = X %>%
+  arrange(desc(name))
+#We check for an edge case, where a storm does not have three observations.
+#Then append it to our design matrix then also reorder the names.
+y = y %>%
+  select(-name)
+X = X %>%
+  select(-name)
+mod = lm(as.matrix(y) ~ as.matrix(X))
+summary(mod)$r.squared
+summary(mod)$sigma
 ```
 
 # Interactions in linear models
@@ -175,7 +216,6 @@ Load the Boston Housing Data from package `MASS` and use `str` and `summary` to 
 data(Boston, package = "MASS")
 str(Boston)
 summary(Boston)
-?MASS::Boston
 ```
 
 Using your knowledge of the modeling problem, try to guess which features are interacting. Confirm using plots in `ggplot` that illustrate three (or more) features.
@@ -219,7 +259,11 @@ No, we did not overfit. The number of rows in the Boston housing data is 506 and
 ```{r}
 base + geom_point(aes(col = zn))
 mod = lm(medv ~  (.)^2 , Boston)
-coef(mod) 
+mod_vanilla = lm(medv ~ rm + zn, Boston)
+summary(mod_vanilla)$r.squared
+summary(mod_vanilla)$sigma
+summary(mod)$r.squared
+summary(mod)$sigma
 ```
 
 # CV
