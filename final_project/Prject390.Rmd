@@ -8,27 +8,28 @@ output: html_document
 ```{r}
 pacman::p_load(dplyr, tidyr, ggplot2, magrittr, stringr, mlr)
 housing_data = read.csv("housing_data_2016_2017.csv")
-
-housing_data %<>%
-  select(-c(HITId, HITTypeId, Title, Description, Keywords, Reward, CreationTime, MaxAssignments,	RequesterAnnotation,	AssignmentDurationInSeconds,	AutoApprovalDelayInSeconds,	Expiration,	NumberOfSimilarHITs, LifetimeInSeconds,	AssignmentId,	WorkerId,	AssignmentStatus,	AcceptTime,	SubmitTime,	AutoApprovalTime,	ApprovalTime,	RejectionTime,	RequesterFeedback,	WorkTimeInSeconds, LifetimeApprovalRate,	Last30DaysApprovalRate,	Last7DaysApprovalRate, URL, url))
-
-housing_data %<>%
-  mutate( zip_code = str_extract(full_address_or_zip_code, "[0-9]{5}"))
-
-housing_data %<>%
-  mutate( kitchen_type = factor(kitchen_type))
-
-housing_data %<>%
-  mutate(mainte0nce_cost = as.character(mainte0nce_cost)) %>% 
-  mutate(common_charges = as.character(common_charges)) %>%    
-  mutate(mainte0nce_cost = as.numeric(mainte0nce_cost)) %>% 
-  mutate(common_charges = as.numeric(common_charges)) %>%
-  mutate(montly_Cost = common_charges + mainte0nce_cost)
-  
 ```
 
-
+```{r}
+housing_data %<>%
+  select(-c(HITId, HITTypeId, Title, Description, Keywords, Reward, CreationTime, MaxAssignments,	RequesterAnnotation,	AssignmentDurationInSeconds,	AutoApprovalDelayInSeconds,	Expiration,	NumberOfSimilarHITs, LifetimeInSeconds,	AssignmentId,	WorkerId,	AssignmentStatus,	AcceptTime,	SubmitTime,	AutoApprovalTime,	ApprovalTime,	RejectionTime,	RequesterFeedback,	WorkTimeInSeconds, LifetimeApprovalRate,	Last30DaysApprovalRate,	Last7DaysApprovalRate, URL, url))
+```
 
 ```{r}
+housing_data %<>%
+  mutate( zip_code = str_extract(full_address_or_zip_code, "[0-9]{5}")) %>%
+  mutate( kitchen_type = factor(kitchen_type)) %>%
+  mutate( maintenance_cost = as.character(maintenance_cost)) %>% 
+  mutate( common_charges = as.character(common_charges)) %>%    
+  mutate( maintenance_cost = as.numeric(maintenance_cost)) %>% 
+  mutate( common_charges = as.numeric(common_charges)) %>%
+  mutate( montly_cost = common_charges + maintenance_cost) 
+
+housing_data %<>%
+  mutate(co_op = ifelse(substr(housing_data$coop_condo, 1, 5) == "co-op", 1, 0)) %>%
+  mutate(condo = ifelse(substr(housing_data$coop_condo, 1, 5) == "condo", 1, 0)) %>%
+    mutate(dogs_allowed = ifelse(substr(housing_data$dogs_allowed, 1, 3) == "yes", 1, 0)) %>%
+  mutate(cats_allowed = ifelse(substr(housing_data$cats_allowed, 1, 3) == "yes", 1, 0)) %>%
+mutate( pets_allowed = ifelse( cats_allowed + dogs_allowed > 0, 1, 0))
 
 ```
