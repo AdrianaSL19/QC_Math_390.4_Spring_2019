@@ -8,7 +8,7 @@ date: "11:59PM May 12, 2019"
 First load the tree-building package:
 
 ```{r}
-?options(java.parameters = "-Xmx4000m")
+options(java.parameters = "-Xmx4000m")
 pacman::p_install_gh("kapelner/YARF", subdir = "YARF", ref = "dev")
 pacman::p_load(YARF)
 install_github("kapelner/YARF")
